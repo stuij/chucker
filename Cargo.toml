@@ -7,3 +7,4 @@ authors = ["Ties Stuij <ties@stuij.se>"]
 libc = "0.2"
 byteorder = "0.4"
 tuntap = { path = "../tuntap-rust" }
+net-bits = { path = "../net-bits" }
