@@ -6,5 +6,5 @@ authors = ["Ties Stuij <ties@stuij.se>"]
 [dependencies]
 libc = "0.2"
 byteorder = "0.4"
-tuntap = { path = "../tuntap-rust" }
-net-bits = { path = "../net-bits" }
+tuntap = { git = "https://github.com/stuij/tuntap-rust" }
+net-bits = { git = "https://github.com/stuij/net-bits"  }
