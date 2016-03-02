@@ -36,7 +36,7 @@ fn make_packet(data: Vec<u8>, link: Link, len: usize) -> Packet {
 
 fn get_network_from_data(data: &[u8], link: &Link) -> Network {
     match link {
-        &Link::EthLink(ref eth) => eth.get_network(data)
+        &Link::EthLink(ref eth) => eth.get_network(&data[eth.offset..])
     }
 }
 
