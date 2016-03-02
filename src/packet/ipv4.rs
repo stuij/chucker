@@ -1,4 +1,4 @@
-use super::packet;
+use super::pkt;
 use super::tcp;
 
 // IPV4
@@ -41,12 +41,12 @@ netbits!{
     dst_addr: [8; 4]
 }
 
-impl packet::HasNetworkLayer for Ipv4 {
-    fn get_transport(&self, buffer: &[u8]) -> packet::Transport {
+impl pkt::HasNetworkLayer for Ipv4 {
+    fn get_transport(&self, buffer: &[u8]) -> pkt::Transport {
         let protocol = self.get_protocol(buffer);
         let trans_offset = self.get_payload_offset(buffer);
         match protocol {
-            0x06 => packet::Transport::TcpTrans(tcp::Tcp { offset: trans_offset }),
+            0x06 => pkt::Transport::TcpTrans(tcp::Tcp { offset: trans_offset }),
             _    => panic!("transport protocol {:x} isn't implemented", protocol)
         }
     }

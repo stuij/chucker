@@ -1,4 +1,4 @@
-use super::packet;
+use super::pkt;
 use super::tcp;
 
 // IPV6
@@ -23,7 +23,19 @@ use super::tcp;
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 pub struct Ipv6 {
     pub offset: usize,
-    extension_headers: Vec<Ipv6ExtHeader>
+    // extension_headers: Vec<Ipv6ExtHeader>
+}
+
+netbits!{
+    Ipv6,
+    version: 4,
+    traffic_class: 8,
+    flow_label: 20,
+    payload_len: 16,
+    nxt_header: 8,
+    hop_limit: 8,
+    src: [8; 16],
+    dst: [8; 16]
 }
 
 struct Ipv6ExtHeader {
@@ -65,12 +77,12 @@ impl Ipv6 {
     }
 }
 
-impl packet::HasNetworkLayer for Ipv6 {
-    fn get_transport(&self, buffer: &[u8]) -> packet::Transport {
+impl pkt::HasNetworkLayer for Ipv6 {
+    fn get_transport(&self, buffer: &[u8]) -> pkt::Transport {
         let protocol = self.get_protocol(buffer);
         let trans_offset = self.get_payload_offset(buffer);
         match protocol {
-            0x06 => packet::Transport::TcpTrans(tcp::Tcp { offset: trans_offset }),
+            0x06 => pkt::Transport::TcpTrans(tcp::Tcp { offset: trans_offset }),
             _    => panic!("transport protocol {:x} isn't implemented", protocol)
         }
     }

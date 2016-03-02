@@ -1,9 +1,7 @@
-mod packet;
-mod eth;
-mod ipv4;
-mod ipv6;
-mod icmp;
-mod icmpv6;
-mod tcp;
-
-pub use self::packet::make_eth_packet;
+pub mod pkt;
+pub mod eth;
+pub mod ipv4;
+pub mod ipv6;
+pub mod icmp;
+pub mod icmpv6;
+pub mod tcp;

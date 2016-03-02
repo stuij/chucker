@@ -5,6 +5,8 @@
 #![allow(dead_code)]
 
 mod packet;
+use packet::pkt;
+use packet::eth;
 
 extern crate libc;
 extern crate tuntap;
@@ -74,29 +76,28 @@ fn main() {
     loop {
         let mut buffer = vec![0u8; MTU_SIZE];
         let len = tap.read(&mut buffer).unwrap();
-        println!("packet in: {}", to_hex_string(&buffer[..len]));
+        println!("packet in len: {} data: {}", len, to_hex_string(&buffer[..len]));
 
-        let mut packet_in = packet::make_eth_packet(buffer, len);
+        let mut packet = pkt::make_eth_packet(buffer, len);
 
-        let mut out = vec![0u8; MTU_SIZE];
-        let _ = copy_slice(&packet_in.data[..len], &mut out);
+        match packet.net {
+            pkt::Network::Ipv6Net(ref mut ipv6) => {
+                // eth.get_network(&data[eth.offset..]);
+                let data = &mut packet.data[ipv6.offset..];
+                let src = ipv6.get_src(data);
+                let dst = ipv6.get_dst(data);
 
-        let mut packet_out = packet::make_eth_packet(out, len);
-
-        // for x in 22..38 {
-        //     out[x] = buffer[x+16];
-        // }
-        // for x in 38..54 {
-        //     out[x] = buffer[x-16];
-        // }
-
-        // tap.write(&out[..len]);
+                ipv6.set_src(data, dst);
+                ipv6.set_dst(data, src)
+            }
+            _ => panic!("ipv4 not covered")
+        }
+        println!("packet out len: {} data: {}",
+                 packet.len,
+                 to_hex_string(&packet.data[..packet.len]));
+        let res = tap.write(&packet.data[..packet.len]);
     }
 }
-
-// def ping_server() -> () {
-    
-// }
 
 #[test]
 fn test_icmpv6_mldv2_packet() -> () {

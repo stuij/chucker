@@ -1,4 +1,4 @@
-use super::packet;
+use super::pkt;
 
 // ICMP
 // RFC 792
