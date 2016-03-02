@@ -4,17 +4,19 @@ use super::ipv6;
 use super::tcp;
 
 // packets
-struct Packet {
-    data: Vec<u8>,
-    link: Link,
-    net: Network
+pub struct Packet {
+    pub data: Vec<u8>,
+    pub len: usize,
+    pub link: Link,
+    pub net: Network,
 //    trans: T
 }
 
 impl Packet {
-    fn new(data: Vec<u8>, link: Link, net: Network) -> Packet {
+    fn new(data: Vec<u8>, len: usize, link: Link, net: Network) -> Packet {
         Packet {
             data:  data, // the actual packet data
+            len:   len, // length of the packet, as reported by backend
             link:  link, // link layer type and embedded offset
             net:   net  // network layer type and embedded offset
 //            trans: trans // link layer type and embedded offset
@@ -22,22 +24,26 @@ impl Packet {
     }
 }
 
-fn make_packet(data: Vec<u8>, link: Link) {
-    let network = get_network_from_data(&data[..], link);
-    let transport = get_transport_from_data(&data[..], network);
-//    Packet::new(data, link, network, transport)
+pub fn make_eth_packet(data: Vec<u8>, len:usize) -> Packet {
+    make_packet(data, Link::EthLink(eth::Eth{offset: 0}), len)
 }
 
-fn get_network_from_data(data: &[u8], link: Link) -> Network {
+fn make_packet(data: Vec<u8>, link: Link, len: usize) -> Packet {
+    let network = get_network_from_data(&data[..], &link);
+    // let transport = get_transport_from_data(&data[..], network);
+    Packet::new(data, len, link, network)
+}
+
+fn get_network_from_data(data: &[u8], link: &Link) -> Network {
     match link {
-        Link::EthLink(eth) => eth.get_network(data)
+        &Link::EthLink(ref eth) => eth.get_network(data)
     }
 }
 
-fn get_transport_from_data(data: &[u8], net: Network) -> Transport {
+fn get_transport_from_data(data: &[u8], net: &Network) -> Transport {
     match net {
-        Network::Ipv4Net(net) => net.get_transport(data),
-        Network::Ipv6Net(net) => net.get_transport(data),
+        &Network::Ipv4Net(ref net) => net.get_transport(data),
+        &Network::Ipv6Net(ref net) => net.get_transport(data),
     }
 }
 
@@ -66,3 +72,4 @@ pub trait HasNetworkLayer {
 pub enum Transport {
     TcpTrans(tcp::Tcp)
 }
+

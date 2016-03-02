@@ -22,15 +22,23 @@ pub struct Ipv4 {
    pub offset: usize
 }
 
-impl Ipv4 {
-    fn get_ihl(&self, buff: &[u8]) -> usize {
-        let ihl = buff[self.offset+0];
-        ihl as usize // should be shifted by 4 or therabouts
-    }
 
-    fn get_protocol(&self, buff: &[u8]) -> u8 {
-        buff[self.offset+9]
-    }
+netbits!{
+    Ipv4,
+    version: 4,
+    ihl: 4,
+    tos: 8,
+    len: 16,
+    ident: 16,
+    flag_res: 1,
+    flag_DF: 1,
+    flag_MF: 1,
+    frag_offs: 13,
+    ttl: 8,
+    protocol: 8,
+    header_chk: 16,
+    src_addr: [8; 4],
+    dst_addr: [8; 4]
 }
 
 impl packet::HasNetworkLayer for Ipv4 {

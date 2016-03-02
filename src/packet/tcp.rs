@@ -20,6 +20,26 @@
 // |   .... data ....                                              |
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
+
 pub struct Tcp {
     pub offset: usize
+}
+
+netbits!{
+    Tcp,
+    src_port:    16,
+    dst_port:    16,
+    seq:         32,
+    ack:         32,
+    data_offset:  4,
+    res:          6,
+    urg:          1,
+    ack:          1,
+    psh:          1,
+    rst:          1,
+    syn:          1,
+    fin:          1,
+    win:         16,
+    chk:         16,
+    urg_ptr:     16,
 }

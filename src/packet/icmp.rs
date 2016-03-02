@@ -1,3 +1,5 @@
+use super::packet;
+
 // ICMP
 // RFC 792
 //

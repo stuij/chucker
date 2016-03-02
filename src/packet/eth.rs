@@ -1,21 +1,16 @@
 use super::packet;
 use super::ipv4;
-use byteorder::{ByteOrder, LittleEndian};
 
+#[derive (Debug, Default)]
 pub struct Eth {
     pub offset: usize
 }
 
 netbits!{
     Eth,
-    version: 16,
-    source_address: [16; 2]
-}
-
-impl Eth {
-    fn get_ethertype(&self, buff: &[u8]) -> u16 {
-        LittleEndian::read_u16(&buff[self.offset+12..self.offset+12+2])
-    }
+    dest: [8; 6],
+    src: [8; 6],
+    ethertype: 16
 }
 
 impl packet::HasLinkLayer for Eth {
