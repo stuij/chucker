@@ -12,10 +12,13 @@ extern crate libc;
 extern crate tuntap;
 extern crate byteorder;
 
+use std::time::Duration;
+use std::thread;
+
 pub use libc::{uid_t, c_int};
 use std::io;
 use std::ffi::CString;
-use tuntap::{TunTap, Tun, Tap};
+
 
 use std::slice::bytes;
 use std::cmp;
@@ -70,10 +73,17 @@ fn main() {
     let _ = set_reuid(0,0);
 
     // let _ = set_reuid(0,old_euid);
-    let mut tap = TunTap::create_named(Tap, &CString::new("tap0").unwrap());
-    tap.add_address(CString::new("1::3").unwrap());
-    
+    let mut tap = tuntap::TunTap::create_named_from_address(
+        tuntap::Tap,
+        tuntap::Ipv6,
+        &CString::new("tap0").unwrap(),
+        CString::new("10.0.0.1").unwrap()
+    );
+    // tap.add_address(CString::new("10.0.0.1").unwrap());
+    // panic!("done");
+    // thread::sleep(Duration::from_millis(2000000));
     loop {
+
         let mut buffer = vec![0u8; MTU_SIZE];
         let len = tap.read(&mut buffer).unwrap();
         println!("packet in len: {} data: {}", len, to_hex_string(&buffer[..len]));
@@ -92,9 +102,9 @@ fn main() {
             }
             _ => panic!("ipv4 not covered")
         }
-        println!("packet out len: {} data: {}",
-                 packet.len,
-                 to_hex_string(&packet.data[..packet.len]));
+//        println!("packet out len: {} data: {}",
+//                 packet.len,
+//                 to_hex_string(&packet.data[..packet.len]));
         let res = tap.write(&packet.data[..packet.len]);
     }
 }
@@ -102,7 +112,7 @@ fn main() {
 #[test]
 fn test_icmpv6_mldv2_packet() -> () {
 
-    
+
     let icmp6_packet = vec!(
         // eth
         0x33, 0x33, 0x00, 0x00, 0x00, 0x16, // mac dest
@@ -112,12 +122,12 @@ fn test_icmpv6_mldv2_packet() -> () {
         // ipv6
         0x60, 0x00, 0x00, 0x00,
         0x00, 0x24, 0x00, 0x01,
-        
+
         0xFE, 0x80, 0x00, 0x00, // dst
         0x00, 0x00, 0x00, 0x00,
         0x04, 0xD8, 0xB8, 0xFF,
         0xFE, 0xB8, 0x1B, 0x41,
-        
+
         0xFF, 0x02, 0x00, 0x00, // src
         0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00,
@@ -125,7 +135,7 @@ fn test_icmpv6_mldv2_packet() -> () {
 
         0x3A, 0x00, 0x05, 0x02, // hop-by-hop option
         0x00, 0x00, 0x01, 0x00,
-        
+
         // icmpv6
         0x8F, 0x00, 0x97, 0x3E, // 0x8F = 143 = Multicast Listener Discovery (MLDv2)
         0x00, 0x00, 0x00, 0x01, //   reports (RFC 3810)
