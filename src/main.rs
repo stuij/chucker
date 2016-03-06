@@ -1,86 +1,42 @@
 #![feature(plugin)]
-#![feature(slice_bytes)]
 #![feature(log_syntax)]
 #![plugin(net_bits)]
 #![allow(dead_code)]
+extern crate libc;
 
 mod packet;
+mod util;
+mod root;
+
 use packet::pkt;
 use packet::eth;
 
-extern crate libc;
 extern crate tuntap;
-extern crate byteorder;
 
 use std::time::Duration;
 use std::thread;
 
-pub use libc::{uid_t, c_int};
-use std::io;
-use std::ffi::CString;
-
-
-use std::slice::bytes;
-use std::cmp;
-
 const MTU_SIZE: usize = 1500;
 
-extern {
-    fn setreuid(ruid: uid_t, euid: uid_t) -> c_int;
-    fn geteuid() -> uid_t;
-    fn getuid() -> uid_t;
-}
 
-pub fn set_reuid(ruid: uid_t, euid: uid_t) -> Result<(), io::Error> {
-    match unsafe { setreuid(ruid, euid) } {
-        0 => Ok(()),
-        -1 => Err(io::Error::last_os_error()),
-        _ => unreachable!()
-    }
-}
-
-pub fn print_euid() -> () {
-    let uid = unsafe { geteuid() };
-    println!("uid is: {}", uid);
-}
-
-fn copy_slice(src: &[u8], dst: &mut [u8]) -> usize {
-    let len = cmp::min(src.len(), dst.len());
-    bytes::copy_memory(& src[..len], &mut dst[..len]);
-    len
-}
-
-fn to_hex_string(bytes: &[u8]) -> String {
-    let strs: Vec<String> = bytes.iter()
-        .map(|b| format!("0x{:02X}", b))
-        .collect();
-    strs.join(", ")
-}
-
-fn print_hex_and_die(msg: &str, bytes: &[u8]) {
-    let byte_str = to_hex_string(bytes);
-    panic!("exiting: {}, while processing packet: [{}]", msg, byte_str);
-}
 
 
 // mainzy
 fn main() {
-    print_euid();
-    let _ = set_reuid(0, unsafe { getuid() });
-    print_euid();
-    let old_euid = unsafe { geteuid() };
-    let _ = set_reuid(0,0);
-    // let _ = set_reuid(0,old_euid);
-
+    root::condescend();
+    let as_root = root::Root::new();
+    
     let mut tap = tuntap::TunTap::create_named_from_address(
         tuntap::Tap, "tap0", "10.0.0.1"
     );
+
     // thread::sleep(Duration::from_millis(2000000));
     loop {
 
         let mut buffer = vec![0u8; MTU_SIZE];
         let len = tap.read(&mut buffer).unwrap();
-        println!("packet in len: {} data: {}", len, to_hex_string(&buffer[..len]));
+        println!("packet in len: {} data: {}", len,
+                 util::to_hex_string(&buffer[..len]));
 
         let mut packet = pkt::make_eth_packet(buffer, len);
 
@@ -98,7 +54,7 @@ fn main() {
         }
 //        println!("packet out len: {} data: {}",
 //                 packet.len,
-//                 to_hex_string(&packet.data[..packet.len]));
+//                 util::to_hex_string(&packet.data[..packet.len]));
         let res = tap.write(&packet.data[..packet.len]);
     }
 }
