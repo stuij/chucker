@@ -1,16 +1,7 @@
-extern crate libc;
 use std::io;
 use libc::{uid_t, c_int};
 
 // root things
-
-// print_euid();
-// let _ = set_reuid(0, unsafe { getuid() });
-// print_euid();
-// let old_euid = unsafe { geteuid() };
-// let _ = set_reuid(0,0);
-// let _ = set_reuid(0,old_euid);
-
 extern {
     fn setreuid(ruid: uid_t, euid: uid_t) -> c_int;
     fn geteuid() -> uid_t;

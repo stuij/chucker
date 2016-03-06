@@ -25,20 +25,20 @@ pub struct Ipv4 {
 
 netbits!{
     Ipv4,
-    version: 4,
-    ihl: 4,
-    tos: 8,
-    len: 16,
-    ident: 16,
-    flag_res: 1,
-    flag_DF: 1,
-    flag_MF: 1,
-    frag_offs: 13,
-    ttl: 8,
-    protocol: 8,
-    header_chk: 16,
-    src_addr: [8; 4],
-    dst_addr: [8; 4]
+    version:         4,
+    ihl:             4,
+    tos:             8,
+    len:            16,
+    ident:          16,
+    flag_res:        1,
+    flag_df:         1,
+    flag_df:         1,
+    frag_offs:      13,
+    ttl:             8,
+    protocol:        8,
+    header_chk:     16,
+    src:        [8; 4],
+    dst:        [8; 4]
 }
 
 impl pkt::HasNetworkLayer for Ipv4 {

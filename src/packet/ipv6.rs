@@ -42,7 +42,7 @@ struct Ipv6ExtHeader {
     header_type: usize
 }
 
-mod Ipv6HeaderTypes {
+mod header_types {
     pub const HOP_BY_HOP: u8 = 0;
     pub const ROUTING: u8 = 43;
     pub const FRAGMENT: u8 = 44;
@@ -64,9 +64,9 @@ impl Ipv6 {
 
         loop {
             match protocol {
-                Ipv6HeaderTypes::HOP_BY_HOP |
-                Ipv6HeaderTypes::DEST_OPTS |
-                Ipv6HeaderTypes::ROUTING => {
+                header_types::HOP_BY_HOP |
+                header_types::DEST_OPTS |
+                header_types::ROUTING => {
                     // implement
                     return 4
                 },
