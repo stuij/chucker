@@ -68,19 +68,13 @@ fn main() {
     print_euid();
     let _ = set_reuid(0, unsafe { getuid() });
     print_euid();
-
     let old_euid = unsafe { geteuid() };
     let _ = set_reuid(0,0);
-
     // let _ = set_reuid(0,old_euid);
+
     let mut tap = tuntap::TunTap::create_named_from_address(
-        tuntap::Tap,
-        tuntap::Ipv6,
-        &CString::new("tap0").unwrap(),
-        CString::new("10.0.0.1").unwrap()
+        tuntap::Tap, "tap0", "10.0.0.1"
     );
-    // tap.add_address(CString::new("10.0.0.1").unwrap());
-    // panic!("done");
     // thread::sleep(Duration::from_millis(2000000));
     loop {
 
