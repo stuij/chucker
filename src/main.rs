@@ -26,17 +26,16 @@ fn main() {
     // thread::sleep(Duration::from_millis(2000000));
     loop {
 
-        let mut buffer = vec![0u8; MTU_SIZE];
+        let mut buffer = vec![0u8; pkt::MTU_SIZE];
         let len = tap.read(&mut buffer).unwrap();
-        println!("packet in len: {} data: {}", len,
-                 util::to_hex_string(&buffer[..len]));
-
         let mut packet = pkt::make_eth_packet(buffer, len);
+        println!("\n-----\n");
+        packet.print();
 
         match packet.net {
             pkt::Network::Ipv6Net(ref mut ipv6) => {
-                // eth.get_network(&data[eth.offset..]);
                 let data = &mut packet.data[ipv6.offset..];
+
                 let src = ipv6.get_src(data);
                 let dst = ipv6.get_dst(data);
 
@@ -44,7 +43,6 @@ fn main() {
                 ipv6.set_dst(data, src)
             },
             pkt::Network::Ipv4Net(ref mut ipv4) => {
-                // eth.get_network(&data[eth.offset..]);
                 let data = &mut packet.data[ipv4.offset..];
                 let src = ipv4.get_src(data);
                 let dst = ipv4.get_dst(data);
@@ -53,9 +51,6 @@ fn main() {
                 ipv4.set_dst(data, src)
             }
         }
-//        println!("packet out len: {} data: {}",
-//                 packet.len,
-//                 util::to_hex_string(&packet.data[..packet.len]));
         let res = tap.write(&packet.data[..packet.len]);
     }
 }

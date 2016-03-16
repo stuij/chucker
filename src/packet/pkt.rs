@@ -2,6 +2,9 @@ use super::eth;
 use super::ipv4;
 use super::ipv6;
 use super::tcp;
+use super::super::util;
+
+pub const MTU_SIZE: usize = 1500;
 
 // packets
 pub struct Packet {
@@ -12,6 +15,7 @@ pub struct Packet {
 //    trans: T
 }
 
+
 impl Packet {
     fn new(data: Vec<u8>, len: usize, link: Link, net: Network) -> Packet {
         Packet {
@@ -20,6 +24,17 @@ impl Packet {
             link:  link, // link layer type and embedded offset
             net:   net  // network layer type and embedded offset
 //            trans: trans // link layer type and embedded offset
+        }
+    }
+
+    pub fn print(&self) {
+        match self.link {
+            Link::EthLink(ref eth) => eth.print(&self.data[eth.offset..])
+        }
+        println!("");
+        match self.net {
+            Network::Ipv4Net(ref net) => net.print(&self.data[net.offset..]),
+            Network::Ipv6Net(ref net) => net.print(&self.data[net.offset..])
         }
     }
 }
@@ -55,6 +70,7 @@ pub enum Link {
 pub trait HasLinkLayer {
     fn get_network(&self, data: &[u8]) -> Network;
     fn get_payload_offset(&self, data: &[u8]) -> usize;
+    fn print(&self, data: &[u8]);
 }
 
 // network layer
@@ -66,6 +82,7 @@ pub enum Network {
 pub trait HasNetworkLayer {
     fn get_transport(&self, data: &[u8]) -> Transport;
     fn get_payload_offset(&self, data: &[u8]) -> usize;
+    fn print(&self, data: &[u8]);
 }
 
 // transport layer
@@ -73,10 +90,21 @@ pub enum Transport {
     TcpTrans(tcp::Tcp)
 }
 
+// net-bits packet generic write fns
+pub fn write_imm(name: &str, val: u64) {
+    let hex = format!("0x{:X}", val);
+    println!("  {: <15}: {: >7}, {: >9}", name, val, hex);
+}
 
+pub fn write_arr(name: &str, val: &[u8]) {
+    let hex_str = util::to_hex_string(val);
+    println!("  {: <15}: {}", name, hex_str);
+}
+
+
+// testing
 #[test]
 fn test_icmpv6_mldv2_packet() -> () {
-
 
     let icmp6_packet = vec!(
         // eth

@@ -1,3 +1,5 @@
+use super::pkt::{write_imm, write_arr};
+
 // TCP
 // RFC 793, updated by RFC 1122, and RFC 3168
 // 0                   1                   2                   3
@@ -26,11 +28,11 @@ pub struct Tcp {
 }
 
 netbits!{
-    Tcp,
+    Tcp, write_imm, write_arr,
     src_port:    16,
     dst_port:    16,
     seq:         32,
-    ack:         32,
+    ack_nr:      32,
     data_offset:  4,
     res:          6,
     urg:          1,

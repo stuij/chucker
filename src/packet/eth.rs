@@ -1,4 +1,5 @@
 use super::pkt;
+use super::pkt::{write_imm, write_arr};
 use super::ipv4;
 use super::ipv6;
 
@@ -8,10 +9,15 @@ pub struct Eth {
 }
 
 netbits!{
-    Eth,
-    dst: [8; 6],
-    src: [8; 6],
+    Eth, write_imm, write_arr,
+    dst: [8; 6; print_eth],
+    src: [8; 6; print_eth],
     ethertype: 16
+}
+
+pub fn print_eth(name: &str, val: &[u8]) {
+    println!("  {: <15}{: <3}{:0>2X}:{:0>2X}:{:0>2X}:{:0>2X}:{:0>2X}:{:0>2X}",
+             name, ":", val[0],val[1],val[2],val[3],val[4],val[5]);
 }
 
 impl pkt::HasLinkLayer for Eth {
@@ -28,12 +34,17 @@ impl pkt::HasLinkLayer for Eth {
             // 0x8100	VLAN-tagged frame (IEEE 802.1Q)
             //   and Shortest Path Bridging IEEE 802.1aq[8]
             // 0x8870	Jumbo Frames (proposed)[2][3]
-            _         => panic!("ethertype {:x} isn't implemented", net_nr)
+            _         => panic!("ethertype {:X} isn't implemented", net_nr)
         }
     }
 
     fn get_payload_offset(&self, buff: &[u8]) -> usize {
         // we're not dealing with vlan tagging for now
         self.offset + 14
+    }
+
+    fn print(&self, buff: &[u8]) {
+        println!("eth:");
+        self.print_fields(buff);
     }
 }
